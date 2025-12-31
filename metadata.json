@@ -1,5 +1,5 @@
 {
-  "name": "JSON Base64 Extractor",
-  "description": "A simple tool to paste a JSON file, such as a WhatsApp flow, and extract all Base64 strings found in 'src' keys.",
+  "name": "Extrator de Base64 de JSON",
+  "description": "Uma ferramenta simples para colar um arquivo JSON, como um fluxo do WhatsApp, e extrair todas as strings Base64 encontradas nas chaves 'src'.",
   "requestFramePermissions": []
 }

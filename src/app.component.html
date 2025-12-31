@@ -1,126 +1,187 @@
 
-<div class="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-  <div class="sm:mx-auto sm:w-full sm:max-w-4xl">
-    <h1 class="text-center text-4xl font-extrabold text-gray-900">
-      JSON Base64 Extractor
-    </h1>
-    <p class="mt-4 text-center text-md text-gray-600 max-w-2xl mx-auto">
-      Paste your JSON content below, like a WhatsApp Flow, and this tool will find and display all Base64 image strings from "src" keys.
-    </p>
-  </div>
-
-  <div class="mt-8 sm:mx-auto sm:w-full sm:max-w-4xl">
-    <div class="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-      <div class="space-y-6">
-        <div>
-          <label for="json-input" class="block text-sm font-medium text-gray-700">
-            JSON Input
-          </label>
-          <div class="mt-1">
-            <textarea 
-              id="json-input" 
-              name="json-input" 
-              rows="15" 
-              class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm font-mono"
-              placeholder="Paste your JSON here..."
-              [value]="jsonInput()"
-              (input)="jsonInput.set($any($event.target).value)">
-            </textarea>
-          </div>
-        </div>
-
-        <div>
-          <button 
-            type="button" 
-            class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-            (click)="extractBase64()">
-            Extract Base64 Strings
-          </button>
-        </div>
-
-        @if (error()) {
-          <div class="rounded-md bg-red-50 p-4">
-            <div class="flex">
-              <div class="flex-shrink-0">
-                <svg class="h-5 w-5 text-red-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-                </svg>
-              </div>
-              <div class="ml-3">
-                <h3 class="text-sm font-medium text-red-800">Error</h3>
-                <div class="mt-2 text-sm text-red-700">
-                  <p>{{ error() }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-
-        <div class="pt-6">
-          <h2 class="text-lg leading-6 font-medium text-gray-900">Extracted Strings ({{ extractedBases().length }})</h2>
-          
-          @if (extractedBases().length > 0) {
-            <div class="mt-4 grid gap-6">
-              @for (item of extractedBases(); track item.id) {
-                <div class="bg-gray-50 p-4 rounded-lg shadow-sm border border-gray-200">
-                  <div class="flex justify-between items-start">
-                    <p class="font-mono text-xs text-gray-700 break-all pr-4">
-                      {{ item.value.substring(0, 100) }}...
-                    </p>
-                    <button 
-                      type="button"
-                      class="relative inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                      (click)="copyToClipboard(item)">
-                      @if (item.copied()) {
-                        <svg class="w-4 h-4 text-green-500 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                        <span>Copied!</span>
-                      } @else {
-                        <svg class="w-4 h-4 text-gray-500 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                        <span>Copy</span>
-                      }
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-          } @else {
-            <div class="mt-4 text-center py-8 px-4 border-2 border-dashed border-gray-200 rounded-lg">
-              <p class="text-sm text-gray-500">No Base64 strings found. Paste some JSON and click "Extract".</p>
-            </div>
-          }
-        </div>
-
-        @if (jsonWithoutBase64()) {
-          <div class="pt-6">
-            <div class="flex justify-between items-center">
-              <h2 class="text-lg leading-6 font-medium text-gray-900">JSON without Base64</h2>
-              <button 
-                type="button"
-                class="relative inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
-                (click)="copyJsonWithoutBase64()">
-                @if (jsonCopied()) {
-                  <svg class="w-4 h-4 text-green-500 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                  <span>Copied!</span>
-                } @else {
-                  <svg class="w-4 h-4 text-gray-500 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                  <span>Copy JSON</span>
-                }
-              </button>
-            </div>
-            <div class="mt-4">
-              <textarea 
-                id="json-output" 
-                name="json-output" 
-                rows="15" 
-                readonly
-                class="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 sm:text-sm font-mono text-gray-800"
-                [value]="jsonWithoutBase64()">
-              </textarea>
-            </div>
-          </div>
-        }
-
+<div class="min-h-screen bg-slate-100">
+  <div class="bg-white shadow-sm">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <div class="text-center">
+        <h1 class="text-4xl font-extrabold text-slate-900 sm:text-5xl">
+          DevTools: Base64
+        </h1>
+        <p class="mt-4 text-lg text-slate-600">
+          Ferramentas úteis para manipulação de JSON e conversão de imagens.
+        </p>
       </div>
     </div>
   </div>
+
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 mt-8">
+    <!-- Tabs -->
+    <div class="mb-8">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+          <button (click)="setActiveTab('json')"
+                  [class]="activeTab() === 'json' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                  class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+            Extrator de JSON
+          </button>
+          <button (click)="setActiveTab('image')"
+                  [class]="activeTab() === 'image' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'"
+                  class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors">
+            Imagem para Base64
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- JSON Extractor Content -->
+    @if (activeTab() === 'json') {
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Input Column -->
+        <div class="bg-white p-6 sm:p-8 shadow sm:rounded-lg">
+          <h2 class="text-xl font-semibold text-slate-800">Entrada de Dados</h2>
+          <p class="mt-1 text-sm text-slate-500">Cole um JSON (ex: fluxo do WhatsApp) para extrair strings Base64 das chaves "src" ou "image".</p>
+          <div class="mt-6">
+            <textarea id="json-input" rows="15"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm font-mono"
+                      placeholder="Cole seu JSON aqui..." [value]="jsonInput()"
+                      (input)="jsonInput.set($any($event.target).value)"></textarea>
+          </div>
+          <div class="mt-6 flex flex-col sm:flex-row gap-4">
+            <button type="button" (click)="extractBase64()"
+                    class="flex-1 justify-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors">
+              Analisar e Extrair
+            </button>
+            <button type="button" (click)="clearJsonInput()"
+                    class="flex-1 justify-center rounded-md bg-white px-4 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+              Limpar Tudo
+            </button>
+          </div>
+        </div>
+
+        <!-- Output Column -->
+        <div class="space-y-8">
+          @if (jsonStatus().type !== 'idle') {
+            <div class="bg-white p-6 shadow sm:rounded-lg">
+                <h3 class="text-lg font-medium text-slate-900 mb-4">Status do JSON</h3>
+                @if (jsonStatus().type === 'success') {
+                  <div class="rounded-md bg-green-50 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" /></svg>
+                      </div>
+                      <div class="ml-3"><p class="text-sm font-medium text-green-800">{{ jsonStatus().message }}</p></div>
+                    </div>
+                  </div>
+                } @else if (jsonStatus().type === 'error') {
+                   <div class="rounded-md bg-red-50 p-4">
+                    <div class="flex">
+                      <div class="flex-shrink-0">
+                         <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" /></svg>
+                      </div>
+                      <div class="ml-3"><p class="text-sm font-medium text-red-800">{{ jsonStatus().message }}</p></div>
+                    </div>
+                  </div>
+                }
+
+                @if (jsonWithoutBase64()) {
+                  <div class="pt-4">
+                    <div class="flex justify-between items-center">
+                      <h4 class="text-md font-medium text-gray-900">JSON Corrigido e Formatado</h4>
+                      <button type="button" (click)="copyJsonWithoutBase64()" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                        @if(jsonCopied()){ Copiado! } @else { Copiar }
+                      </button>
+                    </div>
+                    <textarea readonly rows="8" class="mt-2 block w-full rounded-md border-gray-300 shadow-sm bg-slate-50 sm:text-sm font-mono text-gray-800">{{ jsonWithoutBase64() }}</textarea>
+                  </div>
+                }
+            </div>
+          }
+
+          @if (extractedBases().length > 0) {
+            <div class="bg-white p-6 shadow sm:rounded-lg">
+              <h3 class="text-lg font-medium text-slate-900">Strings Extraídas ({{ extractedBases().length }})</h3>
+              <div class="mt-4 space-y-4">
+                @for(item of extractedBases(); track item.id){
+                  <div class="bg-slate-50 p-3 rounded-md border border-slate-200">
+                    <div class="flex justify-between items-center">
+                      <p class="font-mono text-xs text-slate-700 break-all pr-4">{{ item.value.substring(0, 60) }}...</p>
+                      <button type="button" (click)="copyToClipboard(item)" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                         @if(item.copied()){ Copiado! } @else { Copiar }
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+          @if (history().length > 0) {
+            <div class="bg-white p-6 shadow sm:rounded-lg">
+              <h3 class="text-lg font-medium text-slate-900">Histórico de JSON Limpo</h3>
+               <div class="mt-4 space-y-4">
+                @for(item of history(); track item.id){
+                  <div class="bg-slate-50 p-3 rounded-md border border-slate-200">
+                    <div class="flex justify-between items-center mb-2">
+                       <p class="text-xs text-gray-500">Formatado em: {{ item.timestamp }}</p>
+                       <button type="button" (click)="copyHistoryItem(item)" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                         @if(item.copied()){ Copiado! } @else { Copiar }
+                      </button>
+                    </div>
+                    <textarea readonly rows="3" class="block w-full rounded-md border-gray-300 shadow-sm bg-white sm:text-sm font-mono text-gray-800">{{ item.json }}</textarea>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+
+        </div>
+      </div>
+    }
+
+    <!-- Image to Base64 Content -->
+    @if (activeTab() === 'image') {
+      <div class="bg-white p-6 sm:p-8 shadow sm:rounded-lg">
+        <h2 class="text-xl font-semibold text-slate-800">Conversor de Imagem para Base64</h2>
+        <p class="mt-1 text-sm text-slate-500">Envie uma imagem para gerar o código Base64 correspondente.</p>
+
+        <div class="mt-6">
+          <label for="file-upload" class="relative cursor-pointer rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 block">
+             <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48" aria-hidden="true">
+                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+            <span class="mt-2 block text-sm font-medium text-gray-900">
+              @if(imageFileName()){ {{ imageFileName() }} } @else { Clique para enviar uma imagem }
+            </span>
+            <input id="file-upload" name="file-upload" type="file" class="sr-only" accept="image/*" (change)="onFileSelected($event)">
+          </label>
+        </div>
+
+        @if(imagePreview()){
+          <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+              <div>
+                <h3 class="text-lg font-medium text-slate-900">Pré-visualização</h3>
+                <div class="mt-2 aspect-square w-full max-w-sm rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden">
+                    <img [src]="imagePreview()" alt="Image preview" class="max-h-full max-w-full">
+                </div>
+              </div>
+               <div>
+                  <div class="flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-slate-900">Código Base64</h3>
+                     <button type="button" (click)="copyImageBase64()" class="rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                         @if(imageCopied()){ Copiado! } @else { Copiar }
+                      </button>
+                  </div>
+                   <textarea readonly rows="10" class="mt-2 block w-full rounded-md border-gray-300 shadow-sm bg-slate-50 sm:text-sm font-mono text-gray-800">{{ imageBase64() }}</textarea>
+                   <button type="button" (click)="clearImageSelection()" class="mt-4 w-full rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-colors">
+                     Limpar Imagem
+                   </button>
+               </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div>
+  <footer class="text-center py-8 text-sm text-slate-500">
+    <p>Ferramenta desenvolvida para agilizar o dia a dia.</p>
+  </footer>
 </div>
