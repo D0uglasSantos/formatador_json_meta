@@ -1,0 +1,5 @@
+{
+  "name": "JSON Base64 Extractor",
+  "description": "A simple tool to paste a JSON file, such as a WhatsApp flow, and extract all Base64 strings found in 'src' keys.",
+  "requestFramePermissions": []
+}
